@@ -1,0 +1,58 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package securechar_server;
+
+import java.net.*;
+import java.io.*;
+import Messages.Packet;
+import Forms.MainForm;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+/**
+ *
+ * @author Mohammed Muayad
+ */
+public class ReceiverThread extends Thread {
+    //private String clientID;
+    private Socket clientSocket;
+    private ObjectInputStream inStream;
+    private Packet rcvPkt;
+    private Packet sendPkt;
+    private Packet tempPkt;
+    private String clientID;
+    private static int SessionCouter;
+    private String sessionID;
+    private boolean mainThread;
+    public static int count;
+    private String newClientID;
+
+    public ReceiverThread(Socket clientSocket) {
+        this.clientSocket = clientSocket;
+        this.mainThread=true;
+    }
+
+    @Override
+    public void run() {
+        System.out.println("Receiving Thread Started");
+      //  MainForm.logText.append("Receiving Thread Started \n");
+        count++;
+       // MainForm.logText.append("Active thread:"+count +" \n");
+        try {
+            while (true){
+            rcvPkt = new Packet(); // create new packet
+            inStream = new ObjectInputStream(clientSocket.getInputStream());// new input
+            rcvPkt=(Packet) inStream.readObject(); // listen to the socket for incoming packets 
+            new ServerCore(rcvPkt,clientSocket).start();// send the packet to new thread to be processed 
+            
+            }//while
+        } catch (ClassNotFoundException | IOException ex) {
+            Logger.getLogger(ReceiverThread.class.getName()).log(Level.SEVERE, null, ex);
+        }    
+        count--;
+        MainForm.logText.append("Active thread:"+count +" \n");
+    }// run
+    
+}
